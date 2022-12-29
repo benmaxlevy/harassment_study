@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-from gensim.models import Doc2Vec, KeyedVectors
+from gensim.models import KeyedVectors
 
 import multiprocessing
 
 from gensim.models.doc2vec import TaggedDocument
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
@@ -17,6 +17,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import metrics, utils
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import StandardScaler
 from nltk.tokenize import sent_tokenize, word_tokenize
 from tqdm import tqdm
 
@@ -64,12 +65,22 @@ class MHClassifier:
                         average = np.array(vectorized) / length
                         X.append(average)
                         y.append(row[label_key])
+        scaler = StandardScaler(with_mean=False)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.25, random_state=16)
 
+        # Don't cheat - fit only on training data
+        scaler.fit(self.X_train)
+        self.X_train = scaler.transform(self.X_train)
+        self.X_test = scaler.transform(self.X_test)
+
     def mlp(self):
-        MLP = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 5), random_state=1,
-                            max_iter=10000000000)
+        MLP = GridSearchCV(MLPClassifier(), {'solver': ['lbfgs'],
+                                             'max_iter': [1000000000000000], 'alpha': 10.0 ** -np.arange(1, 10),
+                                             'hidden_layer_sizes': np.arange(10, 15)}, n_jobs=-1)
+
+        # MLP = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 5), random_state=1,
+        # max_iter=10000000000)
         self.clf = MLP.fit(self.X_train, self.y_train)
 
         y_pred = self.clf.predict(self.X_test)
