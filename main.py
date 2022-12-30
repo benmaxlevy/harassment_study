@@ -55,6 +55,13 @@ def main():
     grouped_users["Message"] = df_responses.groupby("Username")["Message"].apply(list).reset_index(name="Message")[
         "Message"]
 
+    grouped_users["Message"] = grouped_users["Message"].str.encode(encoding="utf-8")
+
+    results = {}
+
+    for row in grouped_users.iterrows():
+        results[row[1]["Username"]] = {"messages": row[1]["Message"], "ConvoIDs": row[1]["ConvoID"]}
+    print(results)
     mh_responses = clf.clf.predict(clf.vectorize(df_responses, "Message"))
 
 
