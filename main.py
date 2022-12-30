@@ -41,13 +41,19 @@ def main():
 
     # all messages within igdd dataset
     df = pd.read_csv("../../IGDD-Dump/harassment.txt", sep="\t")
-    df = pd.concat([pd.read_csv("../../IGDD-Dump/hate\ speech.txt", sep="\t"), pd.read_csv("../../IGDD-Dump/nudity_porn.txt", sep="\t"), pd.read_csv("../../IGDD-Dump/sale\ or\ promotion\ of\ illegal\ activities.txt", sep="\t"), pd.read_csv("../../IGDD-Dump/self-injury.txt", sep="\t"), pd.read_csv("../../IGDD-Dump/sexual\ messages_solicitation.txt", sep="\t"), pd.read_csv("../../IGDD-Dump/violence_threat\ of\ violence.txt", sep="\t")])
+    df = pd.concat([pd.read_csv("../../IGDD-Dump/hate speech.txt", sep="\t"),
+                    pd.read_csv("../../IGDD-Dump/nudity_porn.txt", sep="\t"),
+                    pd.read_csv("../../IGDD-Dump/sale or promotion of illegal activities.txt", sep="\t"),
+                    pd.read_csv("../../IGDD-Dump/self-injury.txt", sep="\t"),
+                    pd.read_csv("../../IGDD-Dump/sexual messages_solicitation.txt", sep="\t"),
+                    pd.read_csv("../../IGDD-Dump/violence_threat of violence.txt", sep="\t")])
     df = df.dropna(subset=["Message"])
 
     df_responses = getParticipantMessages(df)
     # group these messages by user
-    grouped_users = df_responses.groupby("Username").agg(list)
-    print("".join(grouped_users).encode(errors="replace").decode(errors="replace"))
+    grouped_users = df_responses.groupby("Username")["ConversationID"].apply(list).reset_index(name="ConvoID")
+    grouped_users["Message"] = df_responses.groupby("Username")["Message"].apply(list).reset_index(name="Message")[
+        "Message"]
 
     mh_responses = clf.clf.predict(clf.vectorize(df_responses, "Message"))
 
