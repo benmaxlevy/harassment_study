@@ -75,18 +75,17 @@ class MHClassifier:
         self.X_test = scaler.transform(self.X_test)
 
     def mlp(self):
+        """
         MLP = GridSearchCV(MLPClassifier(), {'solver': ['lbfgs'],
                                              'max_iter': [1000000000000000], 'alpha': 10.0 ** -np.arange(1, 10),
                                              'hidden_layer_sizes': np.arange(10, 15)}, n_jobs=-1)
-
-        # MLP = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 5), random_state=1,
-        # max_iter=10000000000)
+        """
+        # found parameters using GSCV
+        MLP = MLPClassifier(solver='sgd', alpha=1e-9, hidden_layer_sizes=12,
+                            max_iter=10000000000)
         self.clf = MLP.fit(self.X_train, self.y_train)
 
         y_pred = self.clf.predict(self.X_test)
-
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."])))
 
         return metrics.classification_report(self.y_test, y_pred)
 
@@ -98,10 +97,6 @@ class MHClassifier:
         # get report
         y_pred = self.clf.predict(self.X_test)
 
-        """
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."])))
-        """
         return metrics.classification_report(self.y_test, y_pred)
 
     def multinomialNB(self):
@@ -111,9 +106,6 @@ class MHClassifier:
 
         # get report
         y_pred = self.clf.predict(self.X_test)
-
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."])))
 
         return metrics.classification_report(self.y_test, y_pred)
 
@@ -125,10 +117,6 @@ class MHClassifier:
         # get report
         y_pred = self.clf.predict(self.X_test)
 
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."
-        ])))
-
         return metrics.classification_report(self.y_test, y_pred)
 
     def knn(self, n):
@@ -139,10 +127,6 @@ class MHClassifier:
         # get report
         y_pred = self.clf.predict(self.X_test)
 
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."
-        ])))
-
         return metrics.classification_report(self.y_test, y_pred)
 
     def svm(self):
@@ -152,9 +136,5 @@ class MHClassifier:
 
         # get report
         y_pred = self.clf.predict(self.X_test)
-
-        print(self.clf.predict(self.vectorizer.transform([
-            "my mind is already racing from not being able to relax."
-        ])))
 
         return metrics.classification_report(self.y_test, y_pred)
