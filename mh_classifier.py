@@ -65,14 +65,35 @@ class MHClassifier:
                         average = np.array(vectorized) / length
                         X.append(average)
                         y.append(row[label_key])
-        scaler = StandardScaler(with_mean=False)
+        self.scaler = StandardScaler(with_mean=False)
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.25, random_state=16)
 
         # Don't cheat - fit only on training data
-        scaler.fit(self.X_train)
-        self.X_train = scaler.transform(self.X_train)
-        self.X_test = scaler.transform(self.X_test)
+        self.scaler.fit(self.X_train)
+        self.X_train = self.scaler.transform(self.X_train)
+        self.X_test = self.scaler.transform(self.X_test)
+
+    # word2vec
+    def vectorize(self, df, text_key):
+        w2v = KeyedVectors.load_word2vec_format(
+            './GoogleNews-vectors-negative300.bin', binary=True)
+
+        X = []
+        for i, row in tqdm(df.iterrows()):
+            # get tokenized
+            vectorized = np.zeros(shape=(300,))
+            length = 0
+            for word in word_tokenize(row[text_key]):
+                if word in w2v:
+                    vectorized += np.array(w2v[word])
+                    length = length + 1
+            if length != 0:
+                # average
+                if not np.isnan(np.sum(vectorized)):
+                    average = np.array(vectorized) / length
+                    X.append(average)
+        return X
 
     def mlp(self):
         """

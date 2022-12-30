@@ -5,7 +5,7 @@ import mh_classifier
 
 def getParticipantMessages(df):
     # construct list of participants' usernames
-    profiles = pd.read_csv("../../../IGDD-Dump/Profile.txt", sep="\t")
+    profiles = pd.read_csv("../../IGDD-Dump/Profile.txt", sep="\t")
     usernames = profiles["Username"].dropna().tolist()
 
     return df.loc[df["Username"].isin(usernames)]
@@ -39,16 +39,15 @@ def main():
     # print(clf.knn(n=5))
     # print(clf.svm())
 
-    """
     # find ratio and % of harassment messages that indicate suicide intents 
-    df = pd.read_csv("../../../IGDD-Dump/harassment.txt", sep="\t")
+    df = pd.read_csv("../../IGDD-Dump/harassment.txt", sep="\t")
     df = df.dropna(subset=["Message"])
 
     df_responses = getParticipantMessages(df)
     print(len(df_responses))
     # suicide
 
-    suicide_results = clf.classify(df_responses["Message"])
+    suicide_results = clf.clf.predict(clf.vectorize(df_responses, "Message"))
 
     count = 0
 
@@ -57,8 +56,7 @@ def main():
     for result in suicide_results:
         if result == "suicide":
             suicide = suicide + 1
-            
-    """
+
 
 
 if __name__ == "__main__":
