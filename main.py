@@ -21,7 +21,8 @@ def main():
     suicide_df = pd.read_csv("reddit_data/mental_health/suicidewatch.csv", index_col=0)
 
     # depression-related
-    depression_df = pd.read_csv("reddit_data/mental_health/depression.csv", index_col=0)
+    depression1_df = pd.read_csv("reddit_data/mental_health/depression.csv", index_col=0)
+    depression2_df = pd.read_csv("reddit_data/mental_health/depression_help.csv", index_col=0)
 
     # control-related
     aww_df = pd.read_csv("reddit_data/controls/aww.csv", index_col=0)
