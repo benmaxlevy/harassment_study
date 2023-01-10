@@ -86,8 +86,12 @@ def main():
 
     for row in grouped_users.iterrows():
         results.append({"username": row[1]["Username"], "messages": row[1]["Message"], "ConvoIDs": row[1]["ConvoID"]})
-    print(results)
-    mh_responses = clf.clf.predict(clf.vectorize(df_responses, "Message"))
+
+    for user in results:
+        messages = pd.DataFrame(user["messages"], columns=["Message"])
+        user["mh_classifications"] = clf.clf.predict(clf.vectorize(messages, "Message"))
+
+    print(results[0]["mh_classifications"])
 
 
 if __name__ == "__main__":
