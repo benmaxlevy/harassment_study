@@ -1,6 +1,10 @@
+import sys
+
 import pandas as pd
 
 import mh_classifier
+
+from joblib import dump, load
 
 
 def getParticipantMessages(df):
@@ -15,7 +19,7 @@ def main():
     # anxiety-related
     anxiety_df = pd.read_csv("reddit_data/mental_health/anxiety.csv", index_col=0)
     panic1_df = pd.read_csv("reddit_data/mental_health/panicdisorder.csv", index_col=0)
-    panic2_df = pd.read_csv("reddit_data/mental_health/panicattack.csv.csv", index_col=0)
+    panic2_df = pd.read_csv("reddit_data/mental_health/panicattack.csv", index_col=0)
 
     # suicide-related
     suicide_df = pd.read_csv("reddit_data/mental_health/suicidewatch.csv", index_col=0)
@@ -24,29 +28,31 @@ def main():
     depression1_df = pd.read_csv("reddit_data/mental_health/depression.csv", index_col=0)
     depression2_df = pd.read_csv("reddit_data/mental_health/depression_help.csv", index_col=0)
 
+    # stress-related
+    stress_df = pd.read_csv("reddit_data/mental_health/stress.csv", index_col=0)
+
     # control-related
     aww_df = pd.read_csv("reddit_data/controls/aww.csv", index_col=0)
     mi_df = pd.read_csv("reddit_data/controls/mildlyinteresting.csv", index_col=0)
     st_df = pd.read_csv("reddit_data/controls/showerthoughts.csv", index_col=0)
 
-    mh_df = pd.concat([suicide_df, aww_df, mi_df, st_df, panic1_df, panic2_df, depression_df, anxiety_df]).sample(frac=1)
-    mh_df = mh_df[mh_df["text"] != "[removed]" & mh_df["text"] != "removed"]
+    mh_df = pd.concat([suicide_df, aww_df, mi_df, st_df, panic1_df, panic2_df, depression1_df, depression2_df, anxiety_df, stress_df]).sample(frac=1)
+    mh_df = mh_df[mh_df["text"] != "[removed]"]
+    mh_df = mh_df[mh_df["text"] != "removed"]
 
-    """ uncomment if the controls are in a sep. file 
-    
-    control_df = pd.read_csv("reddit_data/control.csv")
-
-    mh_df = pd.concat([mh_df, control_df]) 
-    """
-
-    clf = mh_classifier.MHClassifier(mh_df, samples=False, ngram_range=(1, 2), word2vec=True)
-    # fit model (and print metrics)
-    #print(clf.logistic())
-    print(clf.mlp())
-    # print(clf.multinomialNB())
-    # print(clf.rf())
-    # print(clf.knn(n=5))
-    # print(clf.svm())
+    try:
+        if sys.argv[1] == "existing_model":
+            clf = load("model.joblib")
+    except:
+        clf = mh_classifier.MHClassifier(mh_df, samples=False, ngram_range=(1, 2), word2vec=True)
+        # fit model (and print metrics)
+        #print(clf.logistic())
+        print(clf.mlp())
+        # print(clf.multinomialNB())
+        # print(clf.rf())
+        # print(clf.knn(n=5))
+        # print(clf.svm())
+        dump(clf.clf, "model.joblib")
 
     # all messages within igdd dataset
     df = pd.read_csv("../../IGDD-Dump/harassment.txt", sep="\t")

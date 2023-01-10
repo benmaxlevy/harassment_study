@@ -12,7 +12,7 @@ class PreProcess:
         # lower case and remove NAs
         self.df[self.text_key] = df[self.text_key].dropna().str.lower()
 
-        self.df[self.text_key] = df[self.text_key].str.replace("[^a-zA-Z]", " ", regex=True)
+        self.df[self.text_key] = df[self.text_key].str.replace("[^a-zA-Z ]", "", regex=True)
 
         # re-encode strings
         for i in range(len(self.df)):
