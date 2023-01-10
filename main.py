@@ -6,6 +6,8 @@ import mh_classifier
 
 from joblib import dump, load
 
+import preprocess
+
 
 def getParticipantMessages(df):
     # construct list of participants' usernames
@@ -63,8 +65,13 @@ def main():
                     pd.read_csv("../../IGDD-Dump/sexual messages_solicitation.txt", sep="\t"),
                     pd.read_csv("../../IGDD-Dump/violence_threat of violence.txt", sep="\t")])
     df = df.dropna(subset=["Message"])
-
     df_responses = getParticipantMessages(df)
+
+    # preprocess IGDD (participants') data
+    preprocessor = preprocess.PreProcess(df_responses, "Message")
+    preprocessor.lemmatize()
+    df_responses = preprocessor.returnDf()
+
     # group these messages by user
     grouped_users = df_responses.groupby("Username")["ConversationID"].apply(list).reset_index(name="ConvoID")
     grouped_users["Message"] = df_responses.groupby("Username")["Message"].apply(list).reset_index(name="Message")[
