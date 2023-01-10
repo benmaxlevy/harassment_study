@@ -80,8 +80,6 @@ def main():
     grouped_users["Message"] = df_responses.groupby("Username")["Message"].apply(list).reset_index(name="Message")[
         "Message"]
 
-    grouped_users["Message"] = grouped_users["Message"].str.encode(encoding="utf-8")
-
     results = []
 
     for row in grouped_users.iterrows():
@@ -90,8 +88,6 @@ def main():
     for user in results:
         messages = pd.DataFrame(user["messages"], columns=["Message"])
         user["mh_classifications"] = clf.clf.predict(clf.vectorize(messages, "Message"))
-
-    print(results[0]["mh_classifications"])
 
 
 if __name__ == "__main__":
