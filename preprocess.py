@@ -9,14 +9,13 @@ class PreProcess:
     def __init__(self, df, text_key="text"):
         self.text_key = text_key
         self.df = df
+
+        self.df = self.df.reset_index(drop=True)
+
         # lower case and remove NAs
         self.df[self.text_key] = df[self.text_key].dropna().str.lower()
 
         self.df[self.text_key] = df[self.text_key].str.replace("[^a-zA-Z ]", "", regex=True)
-
-        # re-encode strings
-        for i in range(len(self.df)):
-            self.df.loc[i, self.text_key] = self.df.loc[i, self.text_key].encode("ascii", "ignore").decode("ascii")
 
     def lemmatize(self):
         for i in range(len(self.df)):

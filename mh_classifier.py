@@ -28,63 +28,68 @@ from tqdm import tqdm
 
 
 class MHClassifier:
-    def __init__(self, df, samples, ngram_range=(1, 2), text_key="text", label_key="label", word2vec=False):
-        self.clf = None
-        self.samples = samples
-        self.ngram_range = ngram_range
-        self.text_key = text_key
-        # cluster sample
-        if samples is not False:
-            df = df.sample(n=self.samples)
+    def __init__(self, df=None, samples=None, ngram_range=(1, 1), text_key="text", label_key="label", word2vec=False,
+                 model=None):
+        if model is None:
+            self.clf = None
+            self.samples = samples
+            self.ngram_range = ngram_range
+            self.text_key = text_key
+            # cluster sample
+            if samples is not False:
+                df = df.sample(n=self.samples)
 
-        data = df[self.text_key]
-        # data = data.str.replace("[^\w\s]", "", regex=True)
+            data = df[self.text_key]
+            # data = data.str.replace("[^\w\s]", "", regex=True)
 
-        df[self.text_key] = data
+            df[self.text_key] = data
 
-        if not word2vec:
+            if not word2vec:
 
-            # fit vectorizer to data
+                # fit vectorizer to data
 
-            self.vectorizer = TfidfVectorizer(ngram_range=self.ngram_range).fit(data)
+                self.vectorizer = TfidfVectorizer(ngram_range=self.ngram_range).fit(data)
 
-            X = self.vectorizer.transform(data)
-            y = df[label_key]
+                X = self.vectorizer.transform(data)
+                y = df[label_key]
 
+            else:
+                w2v = KeyedVectors.load_word2vec_format(
+                    './GoogleNews-vectors-negative300.bin', binary=True)
+
+                X = []
+                y = []
+                for i, row in tqdm(df.iterrows()):
+                    # get tokenized
+                    vectorized = np.zeros(shape=(300,))
+                    length = 0
+                    for word in word_tokenize(row[self.text_key]):
+                        if word in w2v:
+                            vectorized += np.array(w2v[word])
+                            length = length + 1
+                    if length != 0:
+                        # average
+                        if not np.isnan(np.sum(vectorized)):
+                            average = np.array(vectorized) / length
+                            X.append(average)
+                            y.append(row[label_key])
+
+            # because of limitations with OpenBLAS' multithreading, ensure that
+            # OPENBLAS_NUM_THREADS is a small number (e.g., 16), especially if running on a CPU-heavy system
+            oversample = SMOTE()
+            X, y = oversample.fit_resample(X, y)
+
+            self.scaler = StandardScaler(with_mean=False)
+
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.25,
+                                                                                    random_state=16)
+
+            # Don't cheat - fit only on training data
+            self.scaler.fit(self.X_train)
+            self.X_train = self.scaler.transform(self.X_train)
+            self.X_test = self.scaler.transform(self.X_test)
         else:
-            w2v = KeyedVectors.load_word2vec_format(
-                './GoogleNews-vectors-negative300.bin', binary=True)
-
-            X = []
-            y = []
-            for i, row in tqdm(df.iterrows()):
-                # get tokenized
-                vectorized = np.zeros(shape=(300,))
-                length = 0
-                for word in word_tokenize(row[self.text_key]):
-                    if word in w2v:
-                        vectorized += np.array(w2v[word])
-                        length = length + 1
-                if length != 0:
-                    # average
-                    if not np.isnan(np.sum(vectorized)):
-                        average = np.array(vectorized) / length
-                        X.append(average)
-                        y.append(row[label_key])
-
-        # because of limitations with OpenBLAS' multithreading, ensure that
-        # OPENBLAS_NUM_THREADS is a small number (e.g., 16)
-        oversample = SMOTE()
-        X, y = oversample.fit_resample(X, y)
-
-        self.scaler = StandardScaler(with_mean=False)
-
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.25, random_state=16)
-
-        # Don't cheat - fit only on training data
-        self.scaler.fit(self.X_train)
-        self.X_train = self.scaler.transform(self.X_train)
-        self.X_test = self.scaler.transform(self.X_test)
+            self.clf = model
 
     # word2vec
     def vectorize(self, df, text_key):
