@@ -4,9 +4,6 @@ from gensim.models import KeyedVectors
 
 import matplotlib.pyplot as plt
 
-import multiprocessing
-
-from gensim.models.doc2vec import TaggedDocument
 from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import train_test_split, GridSearchCV
 
@@ -75,8 +72,10 @@ class MHClassifier:
                         X.append(average)
                         y.append(row[label_key])
 
-            oversample = SMOTE()
-            X, y = oversample.fit_resample(X, y)
+        # because of limitations with OpenBLAS' multithreading, ensure that
+        # OPENBLAS_NUM_THREADS is a small number (e.g., 16)
+        oversample = SMOTE()
+        X, y = oversample.fit_resample(X, y)
 
         self.scaler = StandardScaler(with_mean=False)
 
