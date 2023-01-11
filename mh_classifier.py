@@ -40,7 +40,6 @@ class MHClassifier:
                 df = df.sample(n=self.samples)
 
             data = df[self.text_key]
-            # data = data.str.replace("[^\w\s]", "", regex=True)
 
             df[self.text_key] = data
 

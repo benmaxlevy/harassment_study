@@ -23,6 +23,9 @@ def main():
     anxiety_df = pd.read_csv("reddit_data/mental_health/anxiety.csv", index_col=0)
     panic1_df = pd.read_csv("reddit_data/mental_health/panicdisorder.csv", index_col=0)
     panic2_df = pd.read_csv("reddit_data/mental_health/panicattack.csv", index_col=0)
+    ocd_df = pd.read_csv("reddit_data/mental_health/ocd.csv", index_col=0)
+    ptsd_df = pd.read_csv("reddit_data/mental_health/ptsd.csv", index_col=0)
+    socialanxiety_df = pd.read_csv("reddit_data/mental_health/socialanxiety.csv", index_col=0)
 
     # suicide-related
     suicide_df = pd.read_csv("reddit_data/mental_health/suicidewatch.csv", index_col=0)
@@ -40,7 +43,7 @@ def main():
     st_df = pd.read_csv("reddit_data/controls/showerthoughts.csv", index_col=0)
 
     mh_df = pd.concat(
-        [suicide_df, aww_df, mi_df, st_df, panic1_df, panic2_df, depression1_df, depression2_df, anxiety_df,
+        [suicide_df, aww_df, mi_df, st_df, panic1_df, panic2_df, ocd_df, ptsd_df, socialanxiety_df, depression1_df, depression2_df, anxiety_df,
          stress_df]).sample(frac=1)
     mh_df = mh_df[mh_df["text"] != "[removed]"]
     mh_df = mh_df[mh_df["text"] != "removed"]
